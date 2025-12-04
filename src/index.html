@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>React Biodata App - Single File</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+    }
+    .topnav {
+      display: flex;
+      gap: 20px;
+      padding: 15px;
+      background: white;
+      border-bottom: 1px solid #ddd;
+    }
+    .topnav a {
+      text-decoration: none;
+      font-weight: bold;
+      color: black;
+    }
+    .topnav a.active {
+      color: blue;
+    }
+    .page {
+      padding: 20px;
+      background: white;
+      margin: 20px;
+      border-radius: 8px;
+    }
+    .biodata-table th {
+      text-align: left;
+      width: 150px;
+      background: #eee;
+      padding: 5px;
+    }
+    .biodata-table td {
+      padding: 5px;
+    }
+    .profile-card {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+    .profile-pic {
+      width: 150px;
+      height: 150px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+    .edit-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 400px;
+    }
+    .edit-form input,
+    .edit-form textarea {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .edit-form label {
+      font-weight: bold;
+    }
+    button {
+      padding: 10px 15px;
+      border-radius: 6px;
+      border: none;
+      background: #111827;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- React & ReactDOM CDN -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+  <!-- React Router DOM CDN -->
+  <script crossorigin src="https://unpkg.com/react-router-dom@6/umd/react-router-dom.development.js"></script>
+
+  <script type="text/javascript">
+    const {
+      BrowserRouter,
+      Routes,
+      Route,
+      NavLink,
+      useNavigate,
+      useLocation,
+    } = ReactRouterDOM;
+    const { useState, useContext, createContext } = React;
+
+    // Context for Biodata
+    const BiodataContext = createContext();
+
+    function BiodataProvider({ children }) {
+      const [biodata, setBiodata] = useState({
+        name: "Shruti",
+        age: 14,
+        grade: "10",
+        roll: "2315022",
+        email: "shruti@example.com",
+        profilePic: "https://via.placeholder.com/150",
+        about: "This is a short about me paragraph."
+      });
+
+      const updateBiodata = (data) => {
+        setBiodata(prev => ({ ...prev, ...data }));
+      };
+
+      return (
+        <BiodataContext.Provider value={{ biodata, updateBiodata }}>
+          {children}
+        </BiodataContext.Provider>
+      );
+    }
+
+    // Home page with biodata table
+    function Home() {
+      const { biodata } = useContext(BiodataContext);
+      return (
+        <div className="page">
+          <h1>Home - Biodata</h1>
+          <table className="biodata-table" border="1" cellPadding="5" cellSpacing="0">
+            <tbody>
+              <tr><th>Name</th><td>{biodata.name}</td></tr>
+              <tr><th>Age</th><td>{biodata.age}</td></tr>
+              <tr><th>Grade</th><td>{biodata.grade}</td></tr>
+              <tr><th>Roll</th><td>{biodata.roll}</td></tr>
+              <tr><th>Email</th><td>{biodata.email}</td></tr>
+            </tbody>
+          </table>
+        </div>
+      );
+    }
+
+    // Profile page with picture and about
+    function Profile() {
+      const { biodata } = useContext(BiodataContext);
+      return (
+        <div className="page">
+          <h1>Profile</h1>
+          <div className="profile-card">
+            <img src={biodata.profilePic} alt="Profile" className="profile-pic" />
+            <div>
+              <h2>{biodata.name}</h2>
+              <p>{biodata.about}</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Edit form page
+    function EditForm() {
+      const { biodata, updateBiodata } = useContext(BiodataContext);
+      const [form, setForm] = useState(biodata);
+      const navigate = useNavigate();
+
+      function handleChange(e) {
+        const { name, value } = e.target;
+        setForm(prev => ({ ...prev, [name]: value }));
+      }
+
+      function handleSubmit(e) {
+        e.preventDefault();
+        updateBiodata({
+          ...form,
+          age: Number(form.age)
+        });
+        navigate("/");
+      }
+
+      return (
+        <div className="page">
+          <h1>Edit Biodata</h1>
+          <form className="edit-form" onSubmit={handleSubmit}>
+            <label>
+              Name
+              <input name="name" value={form.name} onChange={handleChange} required />
+            </label>
+            <label>
+              Age
+              <input name="age" type="number" value={form.age} onChange={handleChange} required />
+            </label>
+            <label>
+              Grade
+              <input name="grade" value={form.grade} onChange={handleChange} required />
+            </label>
+            <label>
+              Roll
+              <input name="roll" value={form.roll} onChange={handleChange} required />
+            </label>
+            <label>
+              Email
+              <input name="email" type="email" value={form.email} onChange={handleChange} required />
+            </label>
+            <label>
+              Profile Picture URL
+              <input name="profilePic" value={form.profilePic} onChange={handleChange} />
+            </label>
+            <label>
+              About
+              <textarea name="about" value={form.about} onChange={handleChange} rows="4" />
+            </label>
+            <button type="submit">Save</button>
+          </form>
+        </div>
+      );
+    }
+
+    // Navigation component with active link styling
+    function Nav() {
+      const location = useLocation();
+      return (
+        <nav className="topnav">
+          <NavLink to="/" end className={({ isActive }) => (isActive ? 'active' : '')}>Home</NavLink>
+          <NavLink to="/profile" className={({ isActive }) => (isActive ? 'active' : '')}>Profile</NavLink>
+          <NavLink to="/edit" className={({ isActive }) => (isActive ? 'active' : '')}>Edit</NavLink>
+        </nav>
+      );
+    }
+
+    // App component with routes
+    function App() {
+      return (
+        <BiodataProvider>
+          <BrowserRouter>
+            <Nav />
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/edit" element={<EditForm />} />
+            </Routes>
+          </BrowserRouter>
+        </BiodataProvider>
+      );
+    }
+
+    // Render React app
+    const rootElement = document.getElementById("root");
+    const root = ReactDOM.createRoot(rootElement);
+    root.render(<App />);
+  </script>
+</body>
+</html>
